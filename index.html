@@ -1,335 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeInBlack Dialer</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* 60% Black, 30% Lime, 10% White */
-        :root {
-            --black: #0a0a0a;
-            --black-surface: #141414;
-            --lime: #39ff14;
-            --lime-hover: #2ee610;
-            --white: #ffffff;
-            --white-muted: #cccccc;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CodeInBlack | Operator Portal</title>
+  
+  <!-- Supabase & Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Space Grotesk', sans-serif;
-        }
+  <style>
+    /* 60% Black, 30% Lime, 10% White */
+    :root {
+      --bg-main: #09090b;
+      --card-bg: #121215;
+      --card-border: #27272a;
+      --text-main: #ffffff;
+      --text-muted: #a1a1aa;
+      --accent: #c4fb24; /* Premium Electric Lime */
+      --accent-hover: #b2e61b;
+      --accent-glow: rgba(196, 251, 36, 0.15);
+      --danger: #ef4444;
+    }
 
-        body {
-            background-color: var(--black);
-            color: var(--white);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .column-layout {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem;
-            animation: fadeIn 0.8s ease-out;
-        }
+    .container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-        /* Banner */
-        .banner {
-            text-align: center;
-            padding: 2rem 0;
-            border-bottom: 2px solid var(--lime);
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px -15px rgba(57, 255, 20, 0.3);
-        }
+    header { text-align: center; margin-bottom: 8px; }
+    header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+    header h1 span { color: var(--accent); }
+    header p { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
 
-        .banner h1 {
-            color: var(--lime);
-            font-size: 2.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+    /* Auth View */
+    #auth-view {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    }
 
-        .banner span {
-            color: var(--white);
-        }
+    .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    input {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 
-        /* Forms & Inputs */
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: #000000;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); }
+    .btn:active { transform: scale(0.98); }
 
-        input {
-            width: 100%;
-            padding: 1rem;
-            background: var(--black-surface);
-            border: 1px solid #333;
-            color: var(--white);
-            font-size: 1.1rem;
-            border-radius: 8px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
+    /* Dashboard View */
+    .hidden { display: none !important; }
+    
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+    }
+    .user-greeting { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .user-greeting i { color: var(--accent); }
+    
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .logout-btn:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
-        input:focus {
-            border-color: var(--lime);
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
-        }
+    .lead-list { display: flex; flex-direction: column; gap: 12px; }
 
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--lime);
-            color: var(--black);
-            border: none;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s ease;
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    .card:hover { border-color: #3f3f46; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+    
+    .info { flex: 1; overflow: hidden; }
+    .info h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .info p { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .info p i { width: 14px; height: 14px; color: var(--accent); }
 
-        button:hover {
-            background: var(--lime-hover);
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
-            transform: translateY(-2px);
-        }
+    .call-btn {
+      background: rgba(196, 251, 36, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(196, 251, 36, 0.2);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .call-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.05); }
+    .call-btn:active { transform: scale(0.95); }
 
-        /* Dashboard / Contact List */
-        #dashboard {
-            display: none;
-            flex-direction: column;
-            gap: 1.5rem;
-            animation: slideUp 0.5s ease-out;
-        }
+    /* Skeletons */
+    .skeleton { background: #27272a; border-radius: 6px; animation: pulse 1.5s infinite ease-in-out; }
+    .skel-title { width: 60%; height: 20px; margin-bottom: 8px; }
+    .skel-text { width: 40%; height: 14px; }
+    .skel-btn { width: 52px; height: 52px; border-radius: 50%; }
 
-        .user-greeting {
-            font-size: 1.2rem;
-            color: var(--white-muted);
-            text-align: center;
-            margin-bottom: 1rem;
-        }
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      color: var(--text-main);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.8);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+    }
+    .toast i { color: var(--accent); }
+    .toast.show { transform: translateY(0); opacity: 1; }
 
-        .contact-card {
-            background: var(--black-surface);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border-left: 4px solid var(--lime);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.3s ease;
-        }
-
-        .contact-card:hover {
-            transform: translateX(5px);
-        }
-
-        .contact-info h3 {
-            color: var(--white);
-            margin-bottom: 0.5rem;
-            font-size: 1.3rem;
-        }
-
-        .contact-info p {
-            color: var(--lime);
-            font-weight: 600;
-        }
-
-        .call-btn {
-            background: transparent;
-            border: 2px solid var(--lime);
-            color: var(--lime);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .call-btn:hover {
-            background: var(--lime);
-            color: var(--black);
-            box-shadow: 0 0 15px var(--lime);
-        }
-
-        .call-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--lime);
-            color: var(--black);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            visibility: visible;
-            bottom: 40px;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
 <body>
 
-    <div class="column-layout">
-        <div class="banner">
-            <h1>CodeInBlack <span>Dialer</span></h1>
-        </div>
+  <div class="container">
+    <header>
+      <h1>CodeInBlack <span>Dialer</span></h1>
+      <p>Secure Operator Access Portal</p>
+    </header>
 
-        <!-- Login Section -->
-        <div id="login-section" class="input-group">
-            <input type="text" id="username" placeholder="Enter Username..." autocomplete="off">
-            <button onclick="login()">Access Portal</button>
-        </div>
-
-        <!-- Dashboard Section -->
-        <div id="dashboard">
-            <div class="user-greeting" id="greeting"></div>
-            <div id="contact-list">
-                <!-- Contacts injected here -->
-            </div>
-            <button onclick="logout()" style="background: transparent; border: 1px solid var(--white); color: var(--white); margin-top: 2rem;">Log Out</button>
-        </div>
+    <!-- Login View -->
+    <div id="auth-view">
+      <div class="input-group">
+        <label>Operator ID</label>
+        <input type="text" id="username" placeholder="Enter your username..." autocomplete="off">
+      </div>
+      <button id="login-btn" class="btn"><i data-lucide="log-in"></i> Initialize Session</button>
     </div>
 
-    <div id="toast" class="toast">Message</div>
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="hidden">
+      <div class="dash-header">
+        <div class="user-greeting"><i data-lucide="user-circle"></i> <span id="greeting-name">User</span></div>
+        <button id="logout-btn" class="logout-btn">Disconnect</button>
+      </div>
+      <div id="lead-list" class="lead-list">
+        <!-- Leads / Skeletons injected here -->
+      </div>
+    </div>
+  </div>
 
-    <script>
-        // ==========================================
-        // INITIALIZE SUPABASE
-        // ==========================================
-        const SUPABASE_URL = 'https://axqwbtqhmfzxiewateyf.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4cXdidHFobWZ6eGlld2F0ZXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMjA2NDUsImV4cCI6MjEwMjc5NjY0NX0.Clwzf8Cc13dg1cE9xNcPOkt3GTUJdVYf3cMQWT05vWE';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <div id="toast" class="toast">
+    <i data-lucide="info"></i> <span id="toast-message">Message</span>
+  </div>
 
-        // Toast Notification
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+  <script>
+    // ==========================================
+    // SUPABASE CONFIGURATION
+    // ==========================================
+    const SUPABASE_URL = 'https://axqwbtqhmfzxiewateyf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4cXdidHFobWZ6eGlld2F0ZXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMjA2NDUsImV4cCI6MjEwMjc5NjY0NX0.Clwzf8Cc13dg1cE9xNcPOkt3GTUJdVYf3cMQWT05vWE';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM Elements
+    const authView = document.getElementById('auth-view');
+    const dashView = document.getElementById('dashboard-view');
+    const usernameInput = document.getElementById('username');
+    const leadList = document.getElementById('lead-list');
+    let currentUser = null;
+
+    // Initialize Icons
+    lucide.createIcons();
+
+    // Toast Utility
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Skeleton Loader
+    function showSkeletons() {
+      leadList.innerHTML = Array(3).fill(0).map(() => `
+        <div class="card">
+          <div class="info">
+            <div class="skeleton skel-title"></div>
+            <div class="skeleton skel-text"></div>
+          </div>
+          <div class="skeleton skel-btn"></div>
+        </div>
+      `).join('');
+    }
+
+    // Login Handler
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const rawUser = usernameInput.value.trim();
+      if (!rawUser) return showToast('Operator ID is required.');
+      
+      const btn = document.getElementById('login-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Connecting...';
+      btn.style.pointerEvents = 'none';
+      lucide.createIcons();
+
+      const username = rawUser.toLowerCase(); // Case-insensitive
+
+      try {
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('username', username)
+          .single();
+
+        if (error || !user) {
+          showToast('Access Denied. User not found.');
+          btn.innerHTML = originalText;
+          btn.style.pointerEvents = 'auto';
+          lucide.createIcons();
+          return;
         }
 
-        // Login Logic
-        async function login() {
-            const rawUsername = document.getElementById('username').value.trim();
-            if (!rawUsername) return showToast('Please enter a username');
-            
-            // Case insensitive formatting
-            const username = rawUsername.toLowerCase();
+        currentUser = user;
+        document.getElementById('greeting-name').innerText = user.username;
+        
+        authView.classList.add('hidden');
+        dashView.classList.remove('hidden');
+        showToast('Authentication Successful');
+        
+        fetchContacts(user.id);
+      } catch (err) {
+        showToast('Network Error. Try again.');
+        btn.innerHTML = originalText;
+        btn.style.pointerEvents = 'auto';
+        lucide.createIcons();
+      }
+    });
 
-            try {
-                // Check if user exists
-                const { data: user, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('username', username)
-                    .single();
+    // Enter key support for login
+    usernameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') document.getElementById('login-btn').click();
+    });
 
-                if (error || !user) {
-                    showToast('User not found in system.');
-                    return;
-                }
+    // Fetch Contacts
+    async function fetchContacts(userId) {
+      showSkeletons();
+      
+      const { data: contacts, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-                showToast('Authentication Successful');
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'flex';
-                document.getElementById('greeting').innerText = `Welcome, ${user.username}`;
-                
-                loadContacts(user.id);
-            } catch (err) {
-                showToast('Connection Error');
-            }
-        }
+      if (error) {
+        leadList.innerHTML = `<div style="text-align:center; color:var(--danger); padding: 20px;">Failed to load data.</div>`;
+        return;
+      }
 
-        // Load Contacts Logic
-        async function loadContacts(userId) {
-            const { data: contacts, error } = await supabase
-                .from('contacts')
-                .select('*')
-                .eq('user_id', userId);
+      if (!contacts || contacts.length === 0) {
+        leadList.innerHTML = `
+          <div style="text-align:center; padding: 40px 20px; color:var(--text-muted);">
+            <i data-lucide="inbox" style="width:32px; height:32px; margin-bottom:12px; opacity:0.5;"></i>
+            <p>No assigned numbers found.</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
 
-            if (error) return showToast('Failed to load contacts');
+      leadList.innerHTML = contacts.map((contact, i) => `
+        <div class="card" style="animation-delay: ${i * 0.05}s">
+          <div class="info">
+            <h3>${contact.business_name}</h3>
+            <p><i data-lucide="phone"></i> ${contact.phone_number}</p>
+          </div>
+          <a href="tel:${contact.phone_number.replace(/[^\d+]/g, '')}" class="call-btn" title="Call ${contact.business_name}">
+            <i data-lucide="phone-call"></i>
+          </a>
+        </div>
+      `).join('');
+      
+      lucide.createIcons();
+    }
 
-            const list = document.getElementById('contact-list');
-            list.innerHTML = ''; // Clear existing
-
-            if (contacts.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:var(--white-muted);">No assigned numbers found.</p>';
-                return;
-            }
-
-            contacts.forEach((contact, index) => {
-                // Staggered animation delay
-                const delay = index * 0.1;
-                
-                const card = document.createElement('div');
-                card.className = 'contact-card';
-                card.style.animation = `slideUp 0.5s ease-out ${delay}s forwards`;
-                card.style.opacity = '0'; // For animation
-
-                card.innerHTML = `
-                    <div class="contact-info">
-                        <h3>${contact.business_name}</h3>
-                        <p>${contact.phone_number}</p>
-                    </div>
-                    <a href="tel:${contact.phone_number}" class="call-btn" title="Call ${contact.business_name}">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
-                        </svg>
-                    </a>
-                `;
-                list.appendChild(card);
-            });
-        }
-
-        // Logout Logic
-        function logout() {
-            document.getElementById('username').value = '';
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('login-section').style.display = 'flex';
-            document.getElementById('contact-list').innerHTML = '';
-        }
-    </script>
+    // Logout Handler
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      currentUser = null;
+      usernameInput.value = '';
+      dashView.classList.add('hidden');
+      authView.classList.remove('hidden');
+      document.getElementById('login-btn').innerHTML = '<i data-lucide="log-in"></i> Initialize Session';
+      lucide.createIcons();
+      document.getElementById('login-btn').style.pointerEvents = 'auto';
+    });
+  </script>
 </body>
 </html>
