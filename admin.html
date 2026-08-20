@@ -1,294 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeInBlack Admin</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* 60% Black, 30% Lime, 10% White */
-        :root {
-            --black: #0a0a0a;
-            --black-surface: #141414;
-            --lime: #39ff14;
-            --lime-hover: #2ee610;
-            --white: #ffffff;
-            --white-muted: #cccccc;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CodeInBlack | Admin Control</title>
+  
+  <!-- Supabase & Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Space Grotesk', sans-serif;
-        }
+  <style>
+    /* 60% Black, 30% Lime, 10% White */
+    :root {
+      --bg-main: #09090b;
+      --card-bg: #121215;
+      --card-border: #27272a;
+      --text-main: #ffffff;
+      --text-muted: #a1a1aa;
+      --accent: #c4fb24; /* Premium Electric Lime */
+      --accent-hover: #b2e61b;
+      --accent-glow: rgba(196, 251, 36, 0.15);
+      --danger: #ef4444;
+    }
 
-        body {
-            background-color: var(--black);
-            color: var(--white);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 2rem;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 32px 24px;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      justify-content: center;
+    }
 
-        .admin-container {
-            width: 100%;
-            max-width: 800px;
-            animation: fadeIn 0.8s ease-out;
-        }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid var(--lime);
-            margin-bottom: 2rem;
-        }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    
+    header h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; }
+    header h1 span { color: var(--accent); }
+    
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--accent); }
 
-        .header h1 {
-            color: var(--lime);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
 
-        .header span {
-            color: var(--white);
-        }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
+    
+    .panel h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel h2 i { color: var(--accent); }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
+    .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    input, select {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none; /* For custom select styling */
+    }
+    
+    /* Custom Select Wrapper */
+    .select-wrapper { position: relative; }
+    .select-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      pointer-events: none;
+    }
 
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-        }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 
-        .panel {
-            background: var(--black-surface);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: #000000;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: 8px;
+    }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); }
+    .btn:active { transform: scale(0.98); }
 
-        .panel h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.2rem;
-            color: var(--white);
-            border-left: 4px solid var(--lime);
-            padding-left: 10px;
-        }
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      color: var(--text-main);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.8);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+    }
+    .toast i { color: var(--accent); }
+    .toast.show { transform: translateY(0); opacity: 1; }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--white-muted);
-            font-size: 0.9rem;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 0.8rem;
-            background: var(--black);
-            border: 1px solid #444;
-            color: var(--white);
-            border-radius: 6px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--lime);
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--lime);
-            color: var(--black);
-            border: none;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
-
-        button:hover {
-            background: var(--lime-hover);
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--lime);
-            color: var(--black);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            visibility: visible;
-            bottom: 40px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <div class="header">
-            <h1>CodeInBlack <span>Admin</span></h1>
-            <a href="index.html" style="color: var(--lime); text-decoration: none;">&larr; Go to Dialer</a>
-        </div>
+  <div class="container">
+    <header>
+      <h1>CodeInBlack <span>Admin</span></h1>
+      <a href="index.html" class="nav-link"><i data-lucide="external-link"></i> View Dialer</a>
+    </header>
 
-        <div class="grid">
-            <!-- Create User Panel -->
-            <div class="panel">
-                <h2>Create New User</h2>
-                <div class="form-group">
-                    <label>Username (Case-Insensitive)</label>
-                    <input type="text" id="new-username" placeholder="e.g. AgentSmith">
-                </div>
-                <button onclick="createUser()">Create User</button>
-            </div>
-
-            <!-- Assign Contact Panel -->
-            <div class="panel">
-                <h2>Assign Phone Number</h2>
-                <div class="form-group">
-                    <label>Select User</label>
-                    <select id="user-select">
-                        <option value="">Loading users...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Business Name</label>
-                    <input type="text" id="business-name" placeholder="e.g. Stark Industries">
-                </div>
-                <div class="form-group">
-                    <label>Phone Number</label>
-                    <input type="tel" id="phone-number" placeholder="e.g. +1 555-0198">
-                </div>
-                <button onclick="assignContact()">Assign Contact</button>
-            </div>
+    <div class="grid">
+      
+      <!-- Create User Panel -->
+      <div class="panel">
+        <h2><i data-lucide="user-plus"></i> Provision Operator</h2>
+        <div class="input-group">
+          <label>Operator ID (Case-Insensitive)</label>
+          <input type="text" id="new-username" placeholder="e.g. AgentSmith" autocomplete="off">
         </div>
+        <button id="create-user-btn" class="btn"><i data-lucide="check-circle"></i> Create Operator</button>
+      </div>
+
+      <!-- Assign Contact Panel -->
+      <div class="panel">
+        <h2><i data-lucide="database"></i> Assign Data Record</h2>
+        <div class="input-group">
+          <label>Select Operator</label>
+          <div class="select-wrapper">
+            <select id="user-select">
+              <option value="">Loading operators...</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Business Name</label>
+          <input type="text" id="business-name" placeholder="e.g. Stark Industries" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone-number" placeholder="e.g. +1 555-0198" autocomplete="off">
+        </div>
+        <button id="assign-contact-btn" class="btn"><i data-lucide="send"></i> Dispatch Record</button>
+      </div>
+
     </div>
+  </div>
 
-    <div id="toast" class="toast">Message</div>
+  <div id="toast" class="toast">
+    <i data-lucide="info"></i> <span id="toast-message">Message</span>
+  </div>
 
-    <script>
-        // ==========================================
-        // INITIALIZE SUPABASE
-        // ==========================================
-        const SUPABASE_URL = 'https://axqwbtqhmfzxiewateyf.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4cXdidHFobWZ6eGlld2F0ZXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMjA2NDUsImV4cCI6MjEwMjc5NjY0NX0.Clwzf8Cc13dg1cE9xNcPOkt3GTUJdVYf3cMQWT05vWE';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script>
+    // ==========================================
+    // SUPABASE CONFIGURATION
+    // ==========================================
+    const SUPABASE_URL = 'https://axqwbtqhmfzxiewateyf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4cXdidHFobWZ6eGlld2F0ZXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMjA2NDUsImV4cCI6MjEwMjc5NjY0NX0.Clwzf8Cc13dg1cE9xNcPOkt3GTUJdVYf3cMQWT05vWE';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Toast Notification
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
+    // Initialize Icons
+    lucide.createIcons();
 
-        // Load Users into Dropdown
-        async function loadUsers() {
-            const select = document.getElementById('user-select');
-            const { data: users, error } = await supabase.from('users').select('*').order('username');
-            
-            if (error) {
-                showToast('Failed to load users');
-                return;
-            }
+    // Toast Utility
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
 
-            select.innerHTML = '<option value="">-- Select a User --</option>';
-            users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = user.username;
-                select.appendChild(option);
-            });
-        }
+    // Load Users into Dropdown
+    async function loadUsers() {
+      const select = document.getElementById('user-select');
+      const { data: users, error } = await supabase.from('users').select('*').order('username');
+      
+      if (error) {
+        showToast('Failed to load operators from database.');
+        return;
+      }
 
-        // Create User
-        async function createUser() {
-            const rawUsername = document.getElementById('new-username').value.trim();
-            if (!rawUsername) return showToast('Username cannot be empty');
-            
-            // Force lowercase for case-insensitivity
-            const username = rawUsername.toLowerCase();
+      select.innerHTML = '<option value="" disabled selected>-- Select an Operator --</option>';
+      users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `@${user.username}`;
+        select.appendChild(option);
+      });
+    }
 
-            const { data, error } = await supabase
-                .from('users')
-                .insert([{ username: username }]);
+    // Event Listener: Create User
+    document.getElementById('create-user-btn').addEventListener('click', async () => {
+      const input = document.getElementById('new-username');
+      const rawUsername = input.value.trim();
+      
+      if (!rawUsername) return showToast('Operator ID cannot be empty.');
+      
+      // Force lowercase for strict case-insensitivity
+      const username = rawUsername.toLowerCase();
+      const btn = document.getElementById('create-user-btn');
+      
+      btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Processing...';
+      btn.style.pointerEvents = 'none';
+      lucide.createIcons();
 
-            if (error) {
-                if(error.code === '23505') showToast('Username already exists!');
-                else showToast('Error creating user');
-                return;
-            }
+      const { error } = await supabase
+        .from('users')
+        .insert([{ username: username }]);
 
-            showToast(`User ${username} created successfully!`);
-            document.getElementById('new-username').value = '';
-            loadUsers(); // Refresh dropdown
-        }
+      btn.innerHTML = '<i data-lucide="check-circle"></i> Create Operator';
+      btn.style.pointerEvents = 'auto';
+      lucide.createIcons();
 
-        // Assign Contact
-        async function assignContact() {
-            const userId = document.getElementById('user-select').value;
-            const businessName = document.getElementById('business-name').value.trim();
-            const phoneNumber = document.getElementById('phone-number').value.trim();
+      if (error) {
+        if (error.code === '23505') showToast('Error: Operator ID already exists.');
+        else showToast('Database Error: Could not create operator.');
+        return;
+      }
 
-            if (!userId) return showToast('Please select a user');
-            if (!businessName) return showToast('Business name is required');
-            if (!phoneNumber) return showToast('Phone number is required');
+      showToast(`Operator @${username} provisioned successfully!`);
+      input.value = '';
+      loadUsers(); // Refresh dropdown dynamically
+    });
 
-            const { data, error } = await supabase
-                .from('contacts')
-                .insert([{ 
-                    user_id: userId, 
-                    business_name: businessName, 
-                    phone_number: phoneNumber 
-                }]);
+    // Event Listener: Assign Contact
+    document.getElementById('assign-contact-btn').addEventListener('click', async () => {
+      const userId = document.getElementById('user-select').value;
+      const bizInput = document.getElementById('business-name');
+      const phoneInput = document.getElementById('phone-number');
+      const btn = document.getElementById('assign-contact-btn');
 
-            if (error) {
-                showToast('Error assigning contact');
-                return;
-            }
+      const businessName = bizInput.value.trim();
+      const phoneNumber = phoneInput.value.trim();
 
-            showToast('Contact assigned successfully!');
-            document.getElementById('business-name').value = '';
-            document.getElementById('phone-number').value = '';
-        }
+      if (!userId) return showToast('Please select a target operator.');
+      if (!businessName) return showToast('Business name is required.');
+      if (!phoneNumber) return showToast('Phone number is required.');
 
-        // Initialize Admin Panel
-        window.onload = loadUsers;
-    </script>
+      btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Dispatching...';
+      btn.style.pointerEvents = 'none';
+      lucide.createIcons();
+
+      const { error } = await supabase
+        .from('contacts')
+        .insert([{ 
+          user_id: userId, 
+          business_name: businessName, 
+          phone_number: phoneNumber 
+        }]);
+
+      btn.innerHTML = '<i data-lucide="send"></i> Dispatch Record';
+      btn.style.pointerEvents = 'auto';
+      lucide.createIcons();
+
+      if (error) {
+        showToast('Database Error: Failed to assign record.');
+        return;
+      }
+
+      showToast('Record dispatched successfully!');
+      bizInput.value = '';
+      phoneInput.value = '';
+    });
+
+    // Initialize Page
+    document.addEventListener('DOMContentLoaded', loadUsers);
+  </script>
 </body>
 </html>
