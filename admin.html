@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeInBlack Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 60% Black, 30% Lime, 10% White */
+        :root {
+            --black: #0a0a0a;
+            --black-surface: #141414;
+            --lime: #39ff14;
+            --lime-hover: #2ee610;
+            --white: #ffffff;
+            --white-muted: #cccccc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .admin-container {
+            width: 100%;
+            max-width: 800px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--lime);
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: var(--lime);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header span {
+            color: var(--white);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--black-surface);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .panel h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            color: var(--white);
+            border-left: 4px solid var(--lime);
+            padding-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--white-muted);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--black);
+            border: 1px solid #444;
+            color: var(--white);
+            border-radius: 6px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--lime);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--lime);
+            color: var(--black);
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: var(--lime-hover);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--lime);
+            color: var(--black);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            bottom: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <div class="header">
+            <h1>CodeInBlack <span>Admin</span></h1>
+            <a href="index.html" style="color: var(--lime); text-decoration: none;">&larr; Go to Dialer</a>
+        </div>
+
+        <div class="grid">
+            <!-- Create User Panel -->
+            <div class="panel">
+                <h2>Create New User</h2>
+                <div class="form-group">
+                    <label>Username (Case-Insensitive)</label>
+                    <input type="text" id="new-username" placeholder="e.g. AgentSmith">
+                </div>
+                <button onclick="createUser()">Create User</button>
+            </div>
+
+            <!-- Assign Contact Panel -->
+            <div class="panel">
+                <h2>Assign Phone Number</h2>
+                <div class="form-group">
+                    <label>Select User</label>
+                    <select id="user-select">
+                        <option value="">Loading users...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="business-name" placeholder="e.g. Stark Industries">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phone-number" placeholder="e.g. +1 555-0198">
+                </div>
+                <button onclick="assignContact()">Assign Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Message</div>
+
+    <script>
+        // ==========================================
+        // INITIALIZE SUPABASE
+        // ==========================================
+        const SUPABASE_URL = 'https://axqwbtqhmfzxiewateyf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4cXdidHFobWZ6eGlld2F0ZXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMjA2NDUsImV4cCI6MjEwMjc5NjY0NX0.Clwzf8Cc13dg1cE9xNcPOkt3GTUJdVYf3cMQWT05vWE';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Load Users into Dropdown
+        async function loadUsers() {
+            const select = document.getElementById('user-select');
+            const { data: users, error } = await supabase.from('users').select('*').order('username');
+            
+            if (error) {
+                showToast('Failed to load users');
+                return;
+            }
+
+            select.innerHTML = '<option value="">-- Select a User --</option>';
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.username;
+                select.appendChild(option);
+            });
+        }
+
+        // Create User
+        async function createUser() {
+            const rawUsername = document.getElementById('new-username').value.trim();
+            if (!rawUsername) return showToast('Username cannot be empty');
+            
+            // Force lowercase for case-insensitivity
+            const username = rawUsername.toLowerCase();
+
+            const { data, error } = await supabase
+                .from('users')
+                .insert([{ username: username }]);
+
+            if (error) {
+                if(error.code === '23505') showToast('Username already exists!');
+                else showToast('Error creating user');
+                return;
+            }
+
+            showToast(`User ${username} created successfully!`);
+            document.getElementById('new-username').value = '';
+            loadUsers(); // Refresh dropdown
+        }
+
+        // Assign Contact
+        async function assignContact() {
+            const userId = document.getElementById('user-select').value;
+            const businessName = document.getElementById('business-name').value.trim();
+            const phoneNumber = document.getElementById('phone-number').value.trim();
+
+            if (!userId) return showToast('Please select a user');
+            if (!businessName) return showToast('Business name is required');
+            if (!phoneNumber) return showToast('Phone number is required');
+
+            const { data, error } = await supabase
+                .from('contacts')
+                .insert([{ 
+                    user_id: userId, 
+                    business_name: businessName, 
+                    phone_number: phoneNumber 
+                }]);
+
+            if (error) {
+                showToast('Error assigning contact');
+                return;
+            }
+
+            showToast('Contact assigned successfully!');
+            document.getElementById('business-name').value = '';
+            document.getElementById('phone-number').value = '';
+        }
+
+        // Initialize Admin Panel
+        window.onload = loadUsers;
+    </script>
+</body>
+</html>
